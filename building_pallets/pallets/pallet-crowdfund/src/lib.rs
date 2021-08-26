@@ -252,7 +252,7 @@ pub mod pallet {
             buf.extend_from_slice(b"crowdfnd");
             buf.extend_from_slice(&index.to_le_bytes()[..]);
 
-            child::ChildInfo::new_default(T::Hashing::hash(&buf).as_ref)
+            child::ChildInfo::new_default(T::Hashing::hash(&buf).as_ref())
         }
 
         /// Record a contribution in the associated child trie.
