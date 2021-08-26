@@ -67,9 +67,18 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const SubmissionDeposit: u64 = 10000;
+    pub const MinContribution: u64 = 100;
+    pub const RetirementPeriod: u32 = 10;
+}
+
 impl pallet_crowdfund::Config for Test {
     type Event = Event;
     type Currency = Balances;
+    type SubmissionDeposit = SubmissionDeposit;
+    type MinContribution = MinContribution;
+    type RetirementPeriod = RetirementPeriod;
 }
 
 // Build genesis storage according to the mock runtime.
