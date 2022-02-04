@@ -286,6 +286,9 @@ impl pallet_scheduler::Config for Runtime {
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
+	type Scheduler = Scheduler;
+	type Proposal = Call;
+	type PalletsOrigin = OriginCaller;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

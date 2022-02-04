@@ -16,14 +16,21 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+	use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::{schedule::{Named, DispatchTime}}};
 	use frame_system::pallet_prelude::*;
+	use sp_runtime::traits::Dispatchable;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+		type Proposal: Parameter + Dispatchable<Origin=Self::Origin> + From<Call<Self>>;
+
+		type PalletsOrigin: From<frame_system::RawOrigin<Self::AccountId>>;
+
+		type Scheduler: Named<Self::BlockNumber, Self::Proposal, Self::PalletsOrigin>;
 	}
 
 	#[pallet::pallet]
@@ -56,6 +63,7 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		SchedulerError,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -74,6 +82,19 @@ pub mod pallet {
 
 			// Update storage.
 			<Something<T>>::put(something);
+
+			let curr_block = <frame_system::Pallet<T>>::block_number();
+
+			let block_number_to_schedule: BlockNumberFor<T> = curr_block + 10u32.into(); 
+
+			T::Scheduler::schedule_named(
+				b"testing_task_schedule".to_vec(),
+				DispatchTime::At(block_number_to_schedule),
+				None,
+				10,
+				frame_system::RawOrigin::Signed(who.clone()).into(),
+				Call::do_something(10).into(),
+			).map_err(|_| Error::<T>::SchedulerError)?;
 
 			// Emit an event.
 			Self::deposit_event(Event::SomethingStored(something, who));
